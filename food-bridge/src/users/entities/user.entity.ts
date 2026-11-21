@@ -1,6 +1,6 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToOne, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import type { Relation } from "typeorm";
-import { PrimaryGeneratedColumn } from "typeorm/browser";
+import { Organization } from "../../organizations/entities/organization.entity.js";
 import { UserRole } from "../../common/user-role.enum.js";
 import { DonorProfile } from "../../donor-profile/entities/donor-profile.entity.js";
 import { NgoProfile } from "../../ngo-profile/entities/ngo-profile.entity.js";
@@ -26,6 +26,13 @@ export class User{
 
     @Column({type:"enum",enum:UserRole})
     role:UserRole;
+
+    @Column({ name: 'organization_id', type: 'uuid', nullable: true })
+    organizationId: string | null;
+
+    @ManyToOne(() => Organization, { nullable: true, onDelete: 'RESTRICT' })
+    @JoinColumn({ name: 'organization_id' })
+    organization?: Relation<Organization> | null;
 
     @CreateDateColumn()
     createdAt:Date;

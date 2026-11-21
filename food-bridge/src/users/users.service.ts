@@ -52,7 +52,10 @@ export class UsersService {
 
     async updateUser (manager:EntityManager,userId:string,dto:UpdateUserDto):Promise<User>{
         const userRepository = manager.getRepository(User);
-        const user = await userRepository.findOne({where:{userId}});
+        const user = await userRepository.findOne({
+            where: { userId },
+            lock: { mode: 'pessimistic_write' },
+        });
         if (!user) {
             throw new NotFoundException(`User not found!`);
         }

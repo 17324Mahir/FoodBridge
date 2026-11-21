@@ -27,6 +27,8 @@
 
 ## Project setup
 
+Create a local PostgreSQL database and configure `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET`, and `JWT_EXPIRY` in your local environment. Generate a signing key with `openssl rand -hex 32`. For a local development database, `DB_SYNC=true` lets TypeORM create or update the schema when the app starts.
+
 ```bash
 $ pnpm install
 ```
@@ -43,6 +45,14 @@ $ pnpm run start:dev
 # production mode
 $ pnpm run start:prod
 ```
+
+## Donor organization workflow
+
+1. Register a donor at `POST /auth/register/donor` and save the returned `user.id`. Log in at `POST /auth/login` to get a bearer token.
+2. As an admin, send `POST /organizations/donors/{userId}/approve` with `{}` to create the donor's organization. To add another donor to the same organization, approve that donor with the existing `organizationId`. Approval also links the donor's earlier donations to that organization.
+3. As an admin, create a category at `POST /food-categories`. As an approved donor, use its ID to create a draft at `POST /donations`. Approved donors in the same organization can list, edit, publish, and withdraw its donations.
+
+Interactive API documentation is available at `/apis`.
 
 ## Run tests
 

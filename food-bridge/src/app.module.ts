@@ -17,6 +17,7 @@ import { AssignmentsModule } from './assignments/assignments.module.js';
 import { DeliveryRecordsModule } from './delivery-records/delivery-records.module.js';
 import { NgoReportsModule } from './ngo-reports/ngo-reports.module.js';
 import { AdminModule } from './admin/admin.module.js';
+import { OrganizationsModule } from './organizations/organizations.module.js';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AdminModule } from './admin/admin.module.js';
     AuthModule, UsersModule, DonorProfileModule, NgoProfileModule, VolunteerProfileModule,
     FoodCategoriesModule, DonationsModule, NgoVolunteersModule,
     ReservationsModule, AssignmentsModule, DeliveryRecordsModule, NgoReportsModule, AdminModule,
+    OrganizationsModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,

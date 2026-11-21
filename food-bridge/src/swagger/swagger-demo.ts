@@ -115,6 +115,13 @@ function examples(data: DemoData): DemoPaths {
       get: { account: 'ngo', params: { id: data.accounts.volunteer.userId } },
     },
 
+    '/organizations/donors/{userId}/approve': {
+      post: {
+        account: 'admin',
+        params: { userId: data.pendingDonor.userId },
+        body: {},
+      },
+    },
     '/food-categories': {
       get: { account: 'donor', params: pagination },
       post: { account: 'admin', body: { name: data.categoryName } },

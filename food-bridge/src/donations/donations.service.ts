@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,7 +13,13 @@ import {
   type Repository,
 } from 'typeorm';
 import { ReservationStatus } from '../common/reservation-status.enum.js';
+import { UserRole } from '../common/user-role.enum.js';
+import { DonorProfile } from '../donor-profile/entities/donor-profile.entity.js';
 import { FoodCategory } from '../food-categories/entities/food-category.entity.js';
+import {
+  OrganizationKind,
+  OrganizationStatus,
+} from '../organizations/entities/organization.entity.js';
 import { Reservation } from '../reservations/entities/reservation.entity.js';
 import { DonationStatus } from './donation-status.enum.js';
 import { DonationUnit } from './donation-unit.enum.js';
@@ -30,9 +37,14 @@ export class DonationsService {
 
   async createDraft(userId: string, dto: CreateDonationDto): Promise<Donation> {
     return this.donationRepository.manager.transaction(async (manager) => {
+      const donorOrganizationId = await this.getApprovedOrganizationId(
+        manager,
+        userId,
+      );
       const repository = manager.getRepository(Donation);
       const draft = repository.create({
         donorUserId: userId,
+        donorOrganizationId,
         categoryId: dto.categoryId,
         title: dto.title,
         quantity: dto.quantity,
@@ -58,7 +70,11 @@ export class DonationsService {
       throw new BadRequestException('Page is too large.');
     }
 
-    const where: FindOptionsWhere<Donation> = { donorUserId: userId };
+    const donorOrganizationId = await this.getApprovedOrganizationId(
+      this.donationRepository.manager,
+      userId,
+    );
+    const where: FindOptionsWhere<Donation> = { donorOrganizationId };
     if (categoryId) {
       where.categoryId = categoryId;
     }
@@ -165,8 +181,12 @@ export class DonationsService {
     userId: string,
     id: string,
   ): Promise<Donation> {
+    const donorOrganizationId = await this.getApprovedOrganizationId(
+      manager,
+      userId,
+    );
     const donation = await manager.findOne(Donation, {
-      where: { id, donorUserId: userId },
+      where: { id, donorOrganizationId },
       lock: manager.queryRunner?.isTransactionActive
         ? { mode: 'pessimistic_write' }
         : undefined,
@@ -175,6 +195,36 @@ export class DonationsService {
       throw new NotFoundException('Donation not found.');
     }
     return donation;
+  }
+
+  private async getApprovedOrganizationId(
+    manager: EntityManager,
+    userId: string,
+  ): Promise<string> {
+    const query = manager
+      .getRepository(DonorProfile)
+      .createQueryBuilder('profile')
+      .innerJoin('profile.user', 'donor')
+      .innerJoin('donor.organization', 'organization')
+      .select('organization.id', 'id')
+      .where('profile.userId = :userId', { userId })
+      .andWhere('donor.role = :role', { role: UserRole.DONOR })
+      .andWhere('organization.kind = :kind', { kind: OrganizationKind.DONOR })
+      .andWhere('organization.status = :status', {
+        status: OrganizationStatus.APPROVED,
+      });
+
+    if (manager.queryRunner?.isTransactionActive) {
+      query.setLock('pessimistic_read');
+    }
+
+    const organization = await query.getRawOne<{ id: string }>();
+    if (!organization) {
+      throw new ForbiddenException(
+        'An approved donor organization is required.',
+      );
+    }
+    return organization.id;
   }
 
   private async checkActiveCategory(

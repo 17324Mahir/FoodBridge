@@ -15,6 +15,11 @@ import { DonorProfile } from '../donor-profile/entities/donor-profile.entity.js'
 import { FoodCategory } from '../food-categories/entities/food-category.entity.js';
 import { NgoProfile } from '../ngo-profile/entities/ngo-profile.entity.js';
 import { NgoVolunteer } from '../ngo-volunteers/entities/ngo-volunteer.entity.js';
+import {
+  Organization,
+  OrganizationKind,
+  OrganizationStatus,
+} from '../organizations/entities/organization.entity.js';
 import { Reservation } from '../reservations/entities/reservation.entity.js';
 import { User } from '../users/entities/user.entity.js';
 import { VolunteerAvailability } from '../volunteer-profile/entities/volunteer-availability.entity.js';
@@ -72,6 +77,19 @@ export async function seedSwaggerDemo(dataSource: DataSource) {
 
     const admin = await account('admin', 'Demo Admin', UserRole.ADMIN);
     const donor = await account('donor', 'Sunrise Kitchen', UserRole.DONOR);
+    const organization = await manager.save(Organization, {
+      name: donor.name,
+      kind: OrganizationKind.DONOR,
+      status: OrganizationStatus.APPROVED,
+    });
+    await manager.update(User, donor.userId, {
+      organizationId: organization.id,
+    });
+    const pendingDonor = await account(
+      'pending-donor',
+      'New Community Kitchen',
+      UserRole.DONOR,
+    );
     const ngo = await account('ngo', 'Dhaka Food Aid', UserRole.NGO);
     const volunteer = await account(
       'volunteer',
@@ -154,6 +172,7 @@ export async function seedSwaggerDemo(dataSource: DataSource) {
       return manager.save(Donation, {
         ...donationTerms,
         donorUserId: donor.userId,
+        donorOrganizationId: organization.id,
         title,
         status,
       });
@@ -286,6 +305,7 @@ export async function seedSwaggerDemo(dataSource: DataSource) {
         volunteerToDecline,
       },
       pendingNgo,
+      pendingDonor,
       userForAdmin,
       volunteerForAdmin,
       volunteerToInvite,

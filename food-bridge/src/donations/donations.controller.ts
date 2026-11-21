@@ -31,7 +31,7 @@ import {
 import { ResponseEnvelopeInterceptor } from '../common/interceptors/response-envelope.interceptor.js';
 import { UserRole } from '../common/user-role.enum.js';
 import type { AuthenticatedUser } from '../auth/decorators/current-user.decorator.js';
-import { JwtAuthGuard } from '../auth/guards/jwt.guards.js';
+import { JwtAuthGuard } from '../donor-catalogue-auth/jwt-auth.guard.js';
 import { Roles } from '../common/roles.decorator.js';
 import { RolesGuard } from '../common/roles.guard.js';
 import { DonationsService } from './donations.service.js';
@@ -45,7 +45,7 @@ type AuthenticatedRequest = { user: AuthenticatedUser };
 @ApiBearerAuth('access-token')
 @ApiUnauthorizedResponse({ description: 'A valid bearer token is required.' })
 @ApiForbiddenResponse({
-  description: 'Only donors can access these operations.',
+  description: 'An approved donor organization is required.',
 })
 @Controller('donations')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -68,8 +68,8 @@ export class DonationsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List the authenticated donor’s donations.' })
-  @ApiOkResponse({ description: 'The donor’s donations were returned.' })
+  @ApiOperation({ summary: 'List donations belonging to the donor’s organization.' })
+  @ApiOkResponse({ description: 'The organization’s donations were returned.' })
   @ApiBadRequestResponse({
     description: 'A filter or pagination value is invalid.',
   })
@@ -82,7 +82,7 @@ export class DonationsController {
 
   @Get(':id')
   @ApiOperation({
-    summary: 'Get one donation owned by the authenticated donor.',
+    summary: 'Get one donation owned by the authenticated donor’s organization.',
   })
   @ApiParam({ name: 'id', description: 'Donation UUID.' })
   @ApiOkResponse({ description: 'The donation was returned.' })
@@ -90,7 +90,7 @@ export class DonationsController {
     description: 'The donation ID is not a valid UUID.',
   })
   @ApiNotFoundResponse({
-    description: 'The donation was not found for this donor.',
+    description: 'The donation was not found for this organization.',
   })
   getDonation(
     @Req() request: AuthenticatedRequest,
@@ -154,7 +154,7 @@ export class DonationsController {
       'Withdrawal requires an available donation with no active reservation.',
   })
   @ApiNotFoundResponse({
-    description: 'The donation was not found for this donor.',
+    description: 'The donation was not found for this organization.',
   })
   withdrawDonation(
     @Req() request: AuthenticatedRequest,
@@ -174,7 +174,7 @@ export class DonationsController {
       'Archiving requires a draft or available donation with no reservation history.',
   })
   @ApiNotFoundResponse({
-    description: 'The donation was not found for this donor.',
+    description: 'The donation was not found for this organization.',
   })
   archiveDonation(
     @Req() request: AuthenticatedRequest,

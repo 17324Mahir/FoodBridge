@@ -18,7 +18,7 @@ import {
 } from '@nestjs/common';
 import { ResponseEnvelopeInterceptor } from '../common/interceptors/response-envelope.interceptor.js';
 import { UserRole } from '../common/user-role.enum.js';
-import { JwtAuthGuard } from '../auth/guards/jwt.guards.js';
+import { JwtAuthGuard } from '../donor-catalogue-auth/jwt-auth.guard.js';
 import { Roles } from '../common/roles.decorator.js';
 import { RolesGuard } from '../common/roles.guard.js';
 import { CreateFoodCategoryDto } from './dtos/create-food-category.dto.js';

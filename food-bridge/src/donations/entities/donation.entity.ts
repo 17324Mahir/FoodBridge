@@ -11,12 +11,13 @@ import {
 } from 'typeorm';
 import { FoodCategory } from '../../food-categories/entities/food-category.entity.js';
 import { User } from '../../users/entities/user.entity.js';
+import { Organization } from '../../organizations/entities/organization.entity.js';
 import { DonationStatus } from '../donation-status.enum.js';
 import { DonationUnit } from '../donation-unit.enum.js';
 
 @Entity('donations')
-@Index('idx_donations_donor_created', [
-  'donorUserId',
+@Index('idx_donations_organization_created', [
+  'donorOrganizationId',
   'createdAt',
 ])
 @Check('ck_donations_quantity_positive', 'quantity > 0')
@@ -34,6 +35,14 @@ export class Donation {
   @ManyToOne(() => User, { nullable: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'donor_user_id' })
   donor: User;
+
+  // Admin approval assigns an organization to drafts from the earlier branch.
+  @Column({ name: 'donor_organization_id', type: 'uuid', nullable: true })
+  donorOrganizationId: string | null;
+
+  @ManyToOne(() => Organization, { nullable: true, onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'donor_organization_id' })
+  donorOrganization?: Organization | null;
 
   @Column({ name: 'category_id', type: 'uuid' })
   categoryId: string;

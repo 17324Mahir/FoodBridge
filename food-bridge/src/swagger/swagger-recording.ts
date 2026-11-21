@@ -24,6 +24,7 @@ const sections: readonly RecordingSection[] = [
   {
     name: 'Admin',
     endpoints: [
+      ['post', '/organizations/donors/{userId}/approve'],
       ['patch', '/admin/ngos/{userId}/toggle-verification'],
       ['post', '/food-categories'],
     ],
