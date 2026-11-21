@@ -1,0 +1,25 @@
+# Local configuration and credentials
+.env
+.env.*
+.envrc
+.npmrc
+.netrc
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_ed25519
+credentials.json
+service-account*.json
+
+# Local dependencies, builds, and uploaded files
+node_modules/
+node_modules */
+dist/
+*.tsbuildinfo
+uploads/
